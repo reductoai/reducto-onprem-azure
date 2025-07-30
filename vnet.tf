@@ -63,6 +63,7 @@ resource "azurerm_subnet" "aks" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [module.subnet_addrs.network_cidr_blocks["aks"]]
+  private_link_service_network_policies_enabled = false
 
   # So that Reducto on cluster can make calls to Computer Vision AI service
   service_endpoints = ["Microsoft.CognitiveServices"]

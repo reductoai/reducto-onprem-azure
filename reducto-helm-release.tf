@@ -20,6 +20,8 @@ resource "helm_release" "reducto" {
     ingress:
       host: ${local.reducto_host}
       className: nginx-internal
+      annotations:
+        nginx.ingress.kubernetes.io/server-alias: "*.${var.private_dns_zone_name}"
     env:
       DATABASE_URL: ${local.database_url}
       AZURE_STORAGE_CONTAINER: ${azurerm_storage_container.reducto.name}
