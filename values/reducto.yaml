@@ -19,7 +19,7 @@ worker:
   kedaScaler: true
   scaling:
     minReplicaCount: 2
-    maxReplicaCount: 30
+    maxReplicaCount: 100
 
   resources:
     requests:

@@ -63,8 +63,11 @@ Aternatively, create `terraform.tfvars` with following contents at a minimum:
 
 ```
 subscription_id="todo"
+reducto_helm_chart_version = "todo"
 reducto_helm_repo_username = "todo"
 reducto_helm_repo_password = "todo"
+name = "todo"
+private_dns_zone_name = "todo.onprem"
 ```
 
 ### Provisioning

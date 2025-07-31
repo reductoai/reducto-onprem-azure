@@ -27,3 +27,8 @@ output "storage_primary_connection_string" {
   value     = azurerm_storage_account.main.primary_connection_string
   sensitive = true
 }
+
+# Private Link Service
+output "reducto_private_link_service_alias" {
+  value = azurerm_private_link_service.reducto.alias
+}

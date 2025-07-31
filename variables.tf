@@ -51,9 +51,11 @@ variable "postgres_storage_tier" {
 }
 
 variable "postgres_high_availability_mode" {
+  # Check availability of HA in a region
+  # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/overview#azure-regions
   description = "SameZone or ZoneRedundant. Empty for no high availability"
   type        = string
-  default     = "ZoneRedundant"
+  default     = "SameZone"
 }
 
 variable "postgres_pgbouncer_enabled" {
@@ -106,7 +108,7 @@ variable "reducto_helm_repo_password" {
 
 variable "reducto_helm_chart_version" {
   description = "Reducto Helm Chart version"
-  default     = "1.9.51"
+  default     = "1.10.0"
 }
 
 variable "reducto_helm_chart" {
@@ -124,5 +126,5 @@ variable "private_dns_zone_name" {
 variable "reducto_api_subdomain" {
   description = "The subdomain for the Reducto API"
   type        = string
-  default     = "api"
+  default     = "reducto"
 }
