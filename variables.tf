@@ -106,6 +106,12 @@ variable "reducto_helm_repo_password" {
   description = "Password for Helm Registry for Reducto Helm Chart"
 }
 
+variable "create_reducto_helm_release" {
+  description = "Create Reducto Helm Release, useful if you manage k8s resources outside of terraform"
+  type        = bool
+  default     = true
+}
+
 variable "reducto_helm_chart_version" {
   description = "Reducto Helm Chart version"
   default     = "1.10.0"

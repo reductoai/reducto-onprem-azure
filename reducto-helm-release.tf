@@ -3,6 +3,7 @@ locals {
 }
 
 resource "helm_release" "reducto" {
+  count            = var.create_reducto_helm_release ? 1 : 0
   namespace        = "reducto"
   name             = "reducto"
   create_namespace = true
