@@ -7,6 +7,15 @@ resource "azurerm_storage_account" "main" {
   account_replication_type = "LRS"
   min_tls_version          = "TLS1_2"
 
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
+
   lifecycle {
     prevent_destroy = true
   }

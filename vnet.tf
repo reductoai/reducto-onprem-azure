@@ -25,6 +25,15 @@ resource "azurerm_virtual_network" "main" {
   address_space       = [module.subnet_addrs.base_cidr_block]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
+
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
 }
 
 # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-networking-private#virtual-network-concepts

@@ -27,6 +27,19 @@ variable "address_space" {
   default     = "10.201.0.0/16"
 }
 
+# VNet
+variable "existing_vnet_name" {
+  description = "Name of existing VNet to use. If not provided, a new VNet will be created"
+  type        = string
+  default     = ""
+}
+
+variable "existing_vnet_resource_group_name" {
+  description = "Resource group of existing VNet. Required if existing_vnet_name is provided"
+  type        = string
+  default     = ""
+}
+
 
 # Postgres Configuration
 variable "postgres_storage_mb" {
@@ -127,4 +140,10 @@ variable "reducto_api_subdomain" {
   description = "The subdomain for the Reducto API"
   type        = string
   default     = "reducto"
+}
+
+variable "environment" {
+  description = "Environment name (e.g., dev, staging, production)"
+  type        = string
+  default     = "production"
 }

@@ -8,6 +8,15 @@ resource "random_pet" "name_prefix" {
 resource "azurerm_private_dns_zone" "postgres" {
   name                = "${random_pet.name_prefix.id}.postgres.database.azure.com"
   resource_group_name = azurerm_resource_group.main.name
+
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
 }
 
 # Private DNS Zone Virtual Network Link
@@ -22,6 +31,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
 resource "azurerm_private_dns_zone" "onprem" {
   name                = var.private_dns_zone_name
   resource_group_name = azurerm_resource_group.main.name
+
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
 }
 
 # Private DNS Zone Virtual Network Link for On-prem

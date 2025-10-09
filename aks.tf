@@ -9,6 +9,15 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   sku_tier = "Standard"
 
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
+
   identity {
     type = "SystemAssigned"
   }
@@ -87,6 +96,15 @@ resource "azurerm_kubernetes_cluster_node_pool" "reducto" {
   vm_size  = var.reducto_node_pool_vm_size
 
   temporary_name_for_rotation = "reductonp"
+
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
 
   upgrade_settings {
     drain_timeout_in_minutes      = 30

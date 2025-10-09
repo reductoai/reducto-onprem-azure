@@ -14,6 +14,15 @@ resource "azurerm_cognitive_account" "reducto" {
 
   public_network_access_enabled = true
 
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
+
   network_acls {
     default_action = "Deny"
 

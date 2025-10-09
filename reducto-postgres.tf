@@ -23,6 +23,15 @@ resource "azurerm_postgresql_flexible_server" "main" {
 
   public_network_access_enabled = false
 
+  tags = {
+    "env"                               = var.environment
+    "location"                          = var.location
+    # "tr:environment-type"             = local.env[var.environment]
+    "tr:application-asset-insight-id"   = "208443"
+    "tr:financial-identifier"           = "66497"
+    "tr:resource-owner"                 = "SureprepLLC"
+  }
+
   dynamic "high_availability" {
     for_each = length(var.postgres_high_availability_mode) > 0 ? [1] : []
     content {
