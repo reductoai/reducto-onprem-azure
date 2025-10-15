@@ -137,7 +137,6 @@ variable "reducto_api_subdomain" {
 }
 
 # Configuration for vLLM
-
 variable "enable_nvidia_device_plugin" {
   type        = bool
   default     = false
