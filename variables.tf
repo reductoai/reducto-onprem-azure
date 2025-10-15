@@ -84,6 +84,13 @@ variable "reducto_node_pool_vm_size" {
   default     = "Standard_F16s_v2"
 }
 
+variable "system_gpu_node_pool_vm_size" {
+  # https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/gpu-accelerated/ndh100v5-series
+  description = "GPU-backed VM Size used for system GPU workloads."
+  type        = string
+  default     = "Standard_ND96isr_H100_v5"
+}
+
 variable "enable_keda" {
   description = "Keda required to scale Reducto Workers based on its internal queue length"
   type        = bool
@@ -127,4 +134,24 @@ variable "reducto_api_subdomain" {
   description = "The subdomain for the Reducto API"
   type        = string
   default     = "reducto"
+}
+
+# Configuration for vLLM
+variable "enable_nvidia_device_plugin" {
+  type        = bool
+  default     = false
+  description = "Whether to install the NVIDIA device plugin for GPU support"
+}
+
+variable "enable_vllm_stack" {
+  type        = bool
+  default     = false
+  description = "Whether to deploy the vLLM stack on the cluster"
+}
+
+variable "vllm_stack_hf_token" {
+  type        = string
+  sensitive   = true
+  default     = ""
+  description = "Hugging Face API token used by the vLLM stack for model access"
 }
