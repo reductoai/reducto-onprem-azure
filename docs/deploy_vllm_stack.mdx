@@ -1,0 +1,92 @@
+---
+title: Deploying vLLM Stack to GPU Node Pool
+---
+
+# Adding a GPU Node Pool to the AKS Cluster
+
+This guide explains how to add the `system_gpu` node pool to the AKS cluster using Terraform. This node pool is intended for GPU workloads such as **vLLM** and other machine learning jobs.
+
+---
+
+## Step 1: Verify the GPU node pool configuration in `aks.tf`
+
+Locate the `azurerm_kubernetes_cluster_node_pool.system_gpu` resource in `aks.tf`. Ensure it matches the following configuration and adjust the `min_count` or `max_count` to fit your workload requirements:
+
+```hcl
+resource "azurerm_kubernetes_cluster_node_pool" "system_gpu" {
+  name                  = "systemgpu"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
+
+  vnet_subnet_id = azurerm_subnet.aks.id
+
+  auto_scaling_enabled = true
+  min_count            = 1
+  max_count            = 2
+
+  node_labels = {
+    worker-type              = "system-gpu"
+    gpu_arch                 = "NVIDIAH100"
+    "nvidia.com/gpu.present" = "true"
+  }
+
+  node_taints = [
+    "nvidia.com/gpu=true:NoSchedule"
+  ]
+
+  vm_size        = var.system_gpu_node_pool_vm_size
+  os_disk_size_gb = 200
+  mode           = "User"
+}
+```
+
+---
+
+## Step 2: Enable the NVIDIA Device Plugin
+
+To allow Kubernetes to recognize GPU hardware, enable the NVIDIA device plugin:
+
+```hcl
+variable "enable_nvidia_device_plugin" {
+  type        = bool
+  default     = true
+  description = "Whether to install the NVIDIA device plugin for GPU support"
+}
+```
+
+⚠️ Ensure that all configuration values in `values/nvidia-device-plugin` are **uncommented and explicitly defined** 
+
+---
+
+## Step 3: Enable the vLLM Stack
+
+Enable deployment of the vLLM inference stack by updating the Terraform variable:
+
+```hcl
+variable "enable_vllm_stack" {
+  type        = bool
+  default     = true
+  description = "Whether to deploy the vLLM stack on the cluster"
+}
+```
+
+⚠️ Ensure that all configuration values in `values/vllm-stack.yaml` are **uncommented and explicitly defined** 
+
+---
+
+## Step 4: Export Hugging Face Token
+
+Before applying Terraform, export your Hugging Face access token so vLLM can authenticate and download models from Hugging Face Hub.
+
+```bash
+export vllm_stack_ht_token="<YOUR_HUGGINGFACE_TOKEN>"
+```
+
+---
+
+## Step 5: Apply the Terraform Changes
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
