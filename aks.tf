@@ -94,3 +94,40 @@ resource "azurerm_kubernetes_cluster_node_pool" "reducto" {
     node_soak_duration_in_minutes = 0
   }
 }
+
+resource "azurerm_kubernetes_cluster_node_pool" "system_gpu" {
+  name                  = "systemgpu"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
+
+  vnet_subnet_id = azurerm_subnet.aks.id
+
+  auto_scaling_enabled = true
+  min_count            = 0
+  max_count            = 2
+
+  node_labels = {
+    "worker-type"            = "system-gpu"
+    "gpu_arch"               = "NVIDIAH100"
+    "nvidia.com/gpu.present" = "true"
+  }
+
+  node_taints = [
+    "nvidia.com/gpu=true:NoSchedule"
+  ]
+
+  os_disk_size_gb = 200
+
+  os_sku   = "Ubuntu"
+  os_type  = "Linux"
+  priority = "Regular"
+  vm_size  = var.system_gpu_node_pool_vm_size
+  mode     = "User"
+
+  temporary_name_for_rotation = "systemgpu"
+
+  upgrade_settings {
+    drain_timeout_in_minutes      = 30
+    max_surge                     = "50%"
+    node_soak_duration_in_minutes = 0
+  }
+}

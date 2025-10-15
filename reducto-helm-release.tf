@@ -36,6 +36,7 @@ resource "helm_release" "reducto" {
   depends_on = [
     azurerm_kubernetes_cluster.main,
     azurerm_kubernetes_cluster_node_pool.reducto,
+    azurerm_kubernetes_cluster_node_pool.system_gpu,
     azurerm_postgresql_flexible_server_database.reducto,
     azurerm_storage_container.reducto,
     azurerm_cognitive_account.reducto,
