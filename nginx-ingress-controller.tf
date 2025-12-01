@@ -1,3 +1,21 @@
+# ConfigMap for NGINX Ingress Controller configuration
+# Security: Disable TLS 1.0 and TLS 1.1, only allow TLS 1.2 and TLS 1.3
+resource "kubectl_manifest" "nginx-ingress-config" {
+  yaml_body = <<-YAML
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: nginx-internal-nginx-ingress-controller
+      namespace: app-routing-system
+    data:
+      ssl-protocols: "TLSv1.2 TLSv1.3"
+    YAML
+
+  depends_on = [
+    azurerm_kubernetes_cluster.main,
+  ]
+}
+
 resource "kubectl_manifest" "nginx-ingress-controller" {
   yaml_body = <<-YAML
     apiVersion: approuting.kubernetes.azure.com/v1alpha1
@@ -16,7 +34,8 @@ resource "kubectl_manifest" "nginx-ingress-controller" {
     azurerm_kubernetes_cluster.main,
     azurerm_subnet.aks,
     azurerm_role_assignment.aks_network_contributor,
-    azurerm_role_assignment.web_app_routing_dns_contributor
+    azurerm_role_assignment.web_app_routing_dns_contributor,
+    kubectl_manifest.nginx-ingress-config
   ]
 }
 
