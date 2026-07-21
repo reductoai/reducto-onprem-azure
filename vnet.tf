@@ -16,6 +16,10 @@ module "subnet_addrs" {
       name     = "storage"
       new_bits = 2
     },
+    {
+      name     = "redis"
+      new_bits = 2
+    },
   ]
 }
 
@@ -56,6 +60,14 @@ resource "azurerm_subnet" "storage" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [module.subnet_addrs.network_cidr_blocks["storage"]]
+}
+
+resource "azurerm_subnet" "redis" {
+  name                              = "${var.name}-redis-subnet"
+  resource_group_name               = azurerm_resource_group.main.name
+  virtual_network_name              = azurerm_virtual_network.main.name
+  address_prefixes                  = [module.subnet_addrs.network_cidr_blocks["redis"]]
+  private_endpoint_network_policies = "Disabled"
 }
 
 resource "azurerm_subnet" "aks" {

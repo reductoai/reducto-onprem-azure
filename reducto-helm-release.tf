@@ -12,10 +12,11 @@ resource "helm_release" "reducto" {
 
   chart   = var.reducto_helm_chart
   version = var.reducto_helm_chart_version
-  wait    = false
+  wait    = true
+  timeout = var.helm_release_timeout
 
   values = [
-    "${file("values/reducto.yaml")}",
+    file("values/reducto.yaml"),
     <<-EOT
     ingress:
       host: ${local.reducto_host}
@@ -30,6 +31,13 @@ resource "helm_release" "reducto" {
       AZURE_STORAGE_ACCOUNT_KEY: ${azurerm_storage_account.main.primary_access_key}
       AZURE_VISION_ENDPOINT: ${azurerm_cognitive_account.reducto.endpoint}
       AZURE_VISION_KEY: ${azurerm_cognitive_account.reducto.primary_access_key}
+%{if var.enable_managed_redis~}
+      REDIS_URL: ${local.redis_url}
+%{endif~}
+%{if var.enable_managed_redis~}
+    redis:
+      enabled: false
+%{endif~}
     EOT
   ]
 
@@ -39,5 +47,6 @@ resource "helm_release" "reducto" {
     azurerm_postgresql_flexible_server_database.reducto,
     azurerm_storage_container.reducto,
     azurerm_cognitive_account.reducto,
+    azurerm_private_endpoint.redis,
   ]
 }

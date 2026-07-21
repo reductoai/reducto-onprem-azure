@@ -44,17 +44,22 @@ resource "azurerm_kubernetes_cluster" "main" {
     }
   }
 
-  automatic_upgrade_channel = "patch"
+  automatic_upgrade_channel = var.kubernetes_version == null ? "stable" : "patch"
   node_os_upgrade_channel   = "NodeImage"
 
   default_node_pool {
-    name           = "default"
-    vm_size        = var.default_node_pool_vm_size
-    vnet_subnet_id = azurerm_subnet.aks.id
+    name                         = "default"
+    vm_size                      = var.default_node_pool_vm_size
+    vnet_subnet_id               = azurerm_subnet.aks.id
+    only_critical_addons_enabled = true
 
     auto_scaling_enabled = true
     min_count            = 1
     max_count            = 5
+
+    node_labels = {
+      "worker-type" = "system"
+    }
 
     upgrade_settings {
       drain_timeout_in_minutes      = 30
@@ -85,6 +90,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "reducto" {
   os_type  = "Linux"
   priority = "Regular"
   vm_size  = var.reducto_node_pool_vm_size
+
+  node_labels = {
+    "worker-type" = "reducto"
+  }
 
   temporary_name_for_rotation = "reductonp"
 

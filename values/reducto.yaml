@@ -1,3 +1,10 @@
+dnsConfigNoAAAA: false
+
+# Chart 1.12.2 auto-selects PreferSameZone for Kubernetes >=1.31, but AKS
+# 1.33 only accepts PreferClose. Keep the portable value until the chart's
+# feature detection matches the upstream Kubernetes API gate.
+setTrafficDistribution: PreferClose
+
 http:
   podDisruptionBudget:
     enabled: true
@@ -12,6 +19,8 @@ http:
   maxSurge: 100%
   maxUnavailable: 0
   terminationGracePeriodSeconds: 300
+  nodeSelector:
+    worker-type: reducto
 
 worker:
   podDisruptionBudget:
@@ -25,6 +34,8 @@ worker:
     requests:
       cpu: 8
       memory: 10Gi
+  nodeSelector:
+    worker-type: reducto
 
 ingress:
   annotations:

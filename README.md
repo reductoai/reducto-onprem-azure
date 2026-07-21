@@ -14,6 +14,7 @@ The project creates [Helm Release](./reducto-helm-release.tf) for Reducto on AKS
 5. AKS supported cluster autoscaler for Reducto node pool autoscaling
 6. AKS supported nginx ingress controller for Reducto Ingress
 7. Private DNS Zone for assigning DNS to Nginx Load Balancer / Reducto Ingress
+8. Azure Managed Redis, reachable only through a private endpoint, for the Reducto queue backend
 
 This project demonstrates fully working cluster that's required to run Reducto.
 
@@ -70,6 +71,21 @@ name = "todo"
 private_dns_zone_name = "todo.onprem"
 ```
 
+The default chart version is `1.12.2`. Azure Managed Redis is opt-in so the
+existing deployment behavior remains unchanged while Redis-backed workloads
+are disabled. Set `enable_managed_redis = true` to provision it; Terraform then
+passes a TLS `REDIS_URL` to the chart and disables the chart's in-cluster Redis.
+`Balanced_B0` is the default cache SKU; production installations should size
+`managed_redis_sku_name` for their queue throughput.
+
+The included values pin `setTrafficDistribution: PreferClose` because chart
+`1.12.2` otherwise auto-selects `PreferSameZone` on AKS 1.33 even though that
+API value is not accepted until a newer Kubernetes release.
+
+Azure Cache for Redis is being retired, so new deployments use Azure Managed
+Redis. The cache has public network access disabled and uses Azure Private Link
+plus the `privatelink.redis.azure.net` private DNS zone.
+
 ### Provisioning
 
 Apply Terraform
@@ -79,6 +95,28 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+For a brand-new cluster, this legacy monolithic root requires two stages
+because its Kubernetes and Helm providers cannot connect until AKS exists. The
+first stage must be reviewed as a saved plan and should contain only Azure
+infrastructure and its dependencies:
+
+```
+terraform plan \
+  -target=azurerm_kubernetes_cluster.main \
+  -target=azurerm_kubernetes_cluster_node_pool.reducto \
+  -target=azurerm_private_endpoint.redis \
+  -out=bootstrap.tfplan
+terraform apply bootstrap.tfplan
+
+terraform plan -out=platform.tfplan
+terraform apply platform.tfplan
+```
+
+Do not reuse either saved plan after configuration or remote state changes.
+The consolidated `onprem-infra` repository avoids targeted bootstrapping by
+using separate Azure infrastructure and platform roots and is preferred for
+new installations.
 
 ### DNS
 
