@@ -122,6 +122,17 @@ variable "reducto_helm_chart" {
   default     = "oci://registry.reducto.ai/reducto-api/reducto"
 }
 
+variable "reducto_extra_values_files" {
+  description = "Paths to additional Helm values files layered last. Use this for deployment-specific workload settings such as Streaq."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for values_path in var.reducto_extra_values_files : can(file(values_path))])
+    error_message = "Every reducto_extra_values_files entry must be a readable file path."
+  }
+}
+
 variable "helm_release_timeout" {
   description = "Timeout in seconds for the Reducto Helm release."
   type        = number

@@ -15,9 +15,10 @@ resource "helm_release" "reducto" {
   wait    = true
   timeout = var.helm_release_timeout
 
-  values = [
-    file("values/reducto.yaml"),
-    <<-EOT
+  values = concat(
+    [
+      file("values/reducto.yaml"),
+      <<-EOT
     ingress:
       host: ${local.reducto_host}
       className: nginx-internal
@@ -38,8 +39,10 @@ resource "helm_release" "reducto" {
     redis:
       enabled: false
 %{endif~}
-    EOT
-  ]
+      EOT
+    ],
+    [for values_path in var.reducto_extra_values_files : file(values_path)],
+  )
 
   depends_on = [
     azurerm_kubernetes_cluster.main,
