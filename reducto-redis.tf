@@ -55,8 +55,10 @@ resource "azurerm_private_endpoint" "redis" {
 }
 
 locals {
+  # RESP3 clients authenticate through HELLO AUTH and Azure Managed Redis
+  # requires the built-in "default" username with its primary access key.
   redis_url = var.enable_managed_redis ? sensitive(format(
-    "rediss://:%s@%s:%d",
+    "rediss://default:%s@%s:%d",
     urlencode(azurerm_managed_redis.reducto[0].default_database[0].primary_access_key),
     azurerm_managed_redis.reducto[0].hostname,
     azurerm_managed_redis.reducto[0].default_database[0].port,
