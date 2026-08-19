@@ -79,10 +79,10 @@ by EnterpriseCluster, and disables the chart's in-cluster Redis.
 `Balanced_B0` is the default cache SKU; production installations should size
 `managed_redis_sku_name` for their queue throughput.
 
-Chart `1.12.6` selects traffic distribution from the Kubernetes version, so the
-old explicit `PreferClose` workaround is no longer needed. The included
-`dnsConfigNoAAAA: false` override remains for this portable dual-stack
-deployment.
+Chart `1.12.6` feature-detects traffic distribution, but the explicit
+`PreferClose` override remains because AKS 1.33 only accepts that value. The
+included `dnsConfigNoAAAA: false` override also remains for this portable
+dual-stack deployment.
 
 ## Streaq bridge (chart 1.12.6)
 
@@ -96,6 +96,9 @@ reducto_helm_chart_version = "1.12.6"
 enable_managed_redis       = true
 reducto_extra_values_files = ["streaq-bridge.yaml"]
 ```
+
+The CPU worker reserves 14 CPU and 26Gi; size the customer node pool to fit
+that reservation before enabling the bridge.
 
 `streaq-bridge.yaml`:
 
@@ -111,11 +114,19 @@ streaqWorkers:
   io:
     enabled: true
     workerName: io
-    useFullImage: true
   cpu:
     enabled: true
     workerName: cpu
     useFullImage: true
+    workerCount: 1
+    replicaCount: 1
+    kedaScaler: false
+    resources:
+      requests:
+        cpu: 14
+        memory: 26Gi
+      limits:
+        memory: 26Gi
 worker:
   enabled: true
 ```

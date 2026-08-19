@@ -12,7 +12,7 @@ resource "azurerm_managed_redis" "reducto" {
     access_keys_authentication_enabled = true
     client_protocol                    = "Encrypted"
     clustering_policy                  = "EnterpriseCluster"
-    eviction_policy                    = "VolatileLRU"
+    eviction_policy                    = "NoEviction"
   }
 }
 

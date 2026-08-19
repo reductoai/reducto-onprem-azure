@@ -1,5 +1,10 @@
 dnsConfigNoAAAA: false
 
+# Chart 1.12.6 feature-detects PreferSameZone/PreferClose, but AKS 1.33
+# only accepts PreferClose. Keep the portable value explicit; feature
+# detection remains available when this key is unset.
+setTrafficDistribution: PreferClose
+
 http:
   podDisruptionBudget:
     enabled: true
