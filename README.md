@@ -74,8 +74,8 @@ private_dns_zone_name = "todo.onprem"
 The default chart version is `1.12.6`. Azure Managed Redis is opt-in so the
 existing deployment behavior remains unchanged while Redis-backed workloads
 are disabled. Set `enable_managed_redis = true` to provision it; Terraform then
-passes a TLS `REDIS_URL` to the chart, sets the Streaq Redis hash tag required
-by EnterpriseCluster, and disables the chart's in-cluster Redis.
+passes a TLS `REDIS_URL` to the chart, sets the Redis hash tag required by
+EnterpriseCluster, and disables the chart's in-cluster Redis.
 `Balanced_B0` is the default cache SKU; production installations should size
 `managed_redis_sku_name` for their queue throughput.
 
@@ -84,23 +84,23 @@ Chart `1.12.6` feature-detects traffic distribution, but the explicit
 included `dnsConfigNoAAAA: false` override also remains for this portable
 dual-stack deployment.
 
-## Streaq bridge (chart 1.12.6)
+## Redis queue bridge (chart 1.12.6)
 
 For the v1.12.6 → v1.13 migration, pin the chart, provision managed Redis, and
-layer the worker topology through `reducto_extra_values_files`. Keep the legacy
-worker enabled during the bridge and start every rollout ratio at `0`; follow
-the migration runbook for the full drain and ramp procedure.
+layer the queue worker topology through `reducto_extra_values_files`. Keep the
+legacy worker enabled during the bridge and start every rollout ratio at `0`;
+follow the migration runbook for the full drain and ramp procedure.
 
 ```hcl
 reducto_helm_chart_version = "1.12.6"
 enable_managed_redis       = true
-reducto_extra_values_files = ["streaq-bridge.yaml"]
+reducto_extra_values_files = ["redis-queue-bridge.yaml"]
 ```
 
 The CPU worker reserves 14 CPU and 26Gi; size the customer node pool to fit
 that reservation before enabling the bridge.
 
-`streaq-bridge.yaml`:
+`redis-queue-bridge.yaml`:
 
 ```yaml
 env:

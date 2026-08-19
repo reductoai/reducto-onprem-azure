@@ -123,7 +123,7 @@ variable "reducto_helm_chart" {
 }
 
 variable "reducto_extra_values_files" {
-  description = "Paths to additional Helm values files layered last. Use this for deployment-specific workload settings such as Streaq."
+  description = "Paths to additional Helm values files layered last. Use this for deployment-specific queue worker settings."
   type        = list(string)
   default     = []
 
@@ -154,7 +154,7 @@ variable "reducto_api_subdomain" {
 
 # Azure Managed Redis
 variable "enable_managed_redis" {
-  description = "Provision Azure Managed Redis and pass its TLS connection URL to Reducto. Opt in when using Streaq or another Redis-backed feature."
+  description = "Provision Azure Managed Redis and pass its TLS connection URL to Reducto. Opt in when using the Redis-backed queue architecture or another Redis-backed feature."
   type        = bool
   default     = false
 }

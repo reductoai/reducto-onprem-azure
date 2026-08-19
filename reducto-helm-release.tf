@@ -24,7 +24,7 @@ locals {
           REDIS_URL = local.redis_url
           # Azure Managed Redis EnterpriseCluster requires multi-key Lua
           # scripts to use one hash slot; the application applies this tag
-          # to Streaq keys.
+          # to queue keys.
           STREAQ_REDIS_HASH_TAG = "reducto-streaq"
         } : {},
       )
