@@ -154,7 +154,7 @@ variable "reducto_api_subdomain" {
 
 # Azure Managed Redis
 variable "enable_managed_redis" {
-  description = "Provision Azure Managed Redis and pass its TLS connection URL to Reducto. Opt in when using the Redis-backed queue architecture or another Redis-backed feature."
+  description = "Provision Azure Managed Redis and pass its TLS connection URL to Reducto. Opt in when using the New Reducto Architecture or another Redis-backed feature."
   type        = bool
   default     = false
 }

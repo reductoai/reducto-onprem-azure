@@ -84,7 +84,7 @@ Chart `1.12.6` feature-detects traffic distribution, but the explicit
 included `dnsConfigNoAAAA: false` override also remains for this portable
 dual-stack deployment.
 
-## Redis queue bridge (chart 1.12.6)
+## New Reducto Architecture bridge (chart 1.12.6)
 
 For the v1.12.6 → v1.13 migration, pin the chart, provision managed Redis, and
 layer the queue worker topology through `reducto_extra_values_files`. Keep the
