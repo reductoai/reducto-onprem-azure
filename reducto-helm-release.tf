@@ -34,6 +34,9 @@ resource "helm_release" "reducto" {
       AZURE_VISION_KEY: ${azurerm_cognitive_account.reducto.primary_access_key}
 %{if var.enable_managed_redis~}
       REDIS_URL: ${local.redis_url}
+      # Azure Managed Redis EnterpriseCluster requires multi-key Lua scripts
+      # to use one hash slot; the application applies this tag to Streaq keys.
+      STREAQ_REDIS_HASH_TAG: reducto-streaq
 %{endif~}
 %{if var.enable_managed_redis~}
     redis:

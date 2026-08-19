@@ -71,16 +71,54 @@ name = "todo"
 private_dns_zone_name = "todo.onprem"
 ```
 
-The default chart version is `1.12.2`. Azure Managed Redis is opt-in so the
+The default chart version is `1.12.6`. Azure Managed Redis is opt-in so the
 existing deployment behavior remains unchanged while Redis-backed workloads
 are disabled. Set `enable_managed_redis = true` to provision it; Terraform then
-passes a TLS `REDIS_URL` to the chart and disables the chart's in-cluster Redis.
+passes a TLS `REDIS_URL` to the chart, sets the Streaq Redis hash tag required
+by EnterpriseCluster, and disables the chart's in-cluster Redis.
 `Balanced_B0` is the default cache SKU; production installations should size
 `managed_redis_sku_name` for their queue throughput.
 
-The included values pin `setTrafficDistribution: PreferClose` because chart
-`1.12.2` otherwise auto-selects `PreferSameZone` on AKS 1.33 even though that
-API value is not accepted until a newer Kubernetes release.
+Chart `1.12.6` selects traffic distribution from the Kubernetes version, so the
+old explicit `PreferClose` workaround is no longer needed. The included
+`dnsConfigNoAAAA: false` override remains for this portable dual-stack
+deployment.
+
+## Streaq bridge (chart 1.12.6)
+
+For the v1.12.6 → v1.13 migration, pin the chart, provision managed Redis, and
+layer the worker topology through `reducto_extra_values_files`. Keep the legacy
+worker enabled during the bridge and start every rollout ratio at `0`; follow
+the migration runbook for the full drain and ramp procedure.
+
+```hcl
+reducto_helm_chart_version = "1.12.6"
+enable_managed_redis       = true
+reducto_extra_values_files = ["streaq-bridge.yaml"]
+```
+
+`streaq-bridge.yaml`:
+
+```yaml
+env:
+  WORKER_PROVIDER: STREAQ_LOCAL
+  PARSE_STREAQ_TRAINABLE_ROLLOUT_RATIO: "0"
+  PARSE_STREAQ_NON_TRAINABLE_ROLLOUT_RATIO: "0"
+  STREAQ_CPU_WORKER_ROLLOUT_PCT: "0"
+  STREAQ_CPU_COMPLETION_TRAINABLE_ROLLOUT_PCT: "0"
+  STREAQ_CPU_COMPLETION_NON_TRAINABLE_ROLLOUT_PCT: "0"
+streaqWorkers:
+  io:
+    enabled: true
+    workerName: io
+    useFullImage: true
+  cpu:
+    enabled: true
+    workerName: cpu
+    useFullImage: true
+worker:
+  enabled: true
+```
 
 Azure Cache for Redis is being retired, so new deployments use Azure Managed
 Redis. The cache has public network access disabled and uses Azure Private Link
