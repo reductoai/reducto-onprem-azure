@@ -14,6 +14,7 @@ The project creates [Helm Release](./reducto-helm-release.tf) for Reducto on AKS
 5. AKS supported cluster autoscaler for Reducto node pool autoscaling
 6. AKS supported nginx ingress controller for Reducto Ingress
 7. Private DNS Zone for assigning DNS to Nginx Load Balancer / Reducto Ingress
+8. Azure Managed Redis, reachable only through a private endpoint, for the Reducto queue backend
 
 This project demonstrates fully working cluster that's required to run Reducto.
 
@@ -70,6 +71,70 @@ name = "todo"
 private_dns_zone_name = "todo.onprem"
 ```
 
+The default chart version is `1.12.6`. Azure Managed Redis is opt-in so the
+existing deployment behavior remains unchanged while Redis-backed workloads
+are disabled. Set `enable_managed_redis = true` to provision it; Terraform then
+passes a TLS `REDIS_URL` to the chart, sets the Redis hash tag required by
+EnterpriseCluster, and disables the chart's in-cluster Redis.
+`Balanced_B0` is the default cache SKU; production installations should size
+`managed_redis_sku_name` for their queue throughput.
+
+Chart `1.12.6` feature-detects traffic distribution, but the explicit
+`PreferClose` override remains because AKS 1.33 only accepts that value. The
+included `dnsConfigNoAAAA: false` override also remains for this portable
+dual-stack deployment.
+
+## New Reducto Architecture bridge (chart 1.12.6)
+
+For the v1.12.6 → v1.13 migration, pin the chart, provision managed Redis, and
+layer the queue worker topology through `reducto_extra_values_files`. Keep the
+legacy worker enabled during the bridge and start every rollout ratio at `0`;
+follow the migration runbook for the full drain and ramp procedure.
+
+```hcl
+reducto_helm_chart_version = "1.12.6"
+enable_managed_redis       = true
+reducto_extra_values_files = ["redis-queue-bridge.yaml"]
+```
+
+The CPU worker reserves 14 CPU and 26Gi; size the customer node pool to fit
+that reservation before enabling the bridge.
+
+`redis-queue-bridge.yaml`:
+
+```yaml
+env:
+  WORKER_PROVIDER: STREAQ_LOCAL
+  PARSE_STREAQ_TRAINABLE_ROLLOUT_RATIO: "0"
+  PARSE_STREAQ_NON_TRAINABLE_ROLLOUT_RATIO: "0"
+  STREAQ_CPU_WORKER_ROLLOUT_PCT: "0"
+  STREAQ_CPU_COMPLETION_TRAINABLE_ROLLOUT_PCT: "0"
+  STREAQ_CPU_COMPLETION_NON_TRAINABLE_ROLLOUT_PCT: "0"
+streaqWorkers:
+  io:
+    enabled: true
+    workerName: io
+  cpu:
+    enabled: true
+    workerName: cpu
+    useFullImage: true
+    workerCount: 1
+    replicaCount: 1
+    kedaScaler: false
+    resources:
+      requests:
+        cpu: 14
+        memory: 26Gi
+      limits:
+        memory: 26Gi
+worker:
+  enabled: true
+```
+
+Azure Cache for Redis is being retired, so new deployments use Azure Managed
+Redis. The cache has public network access disabled and uses Azure Private Link
+plus the `privatelink.redis.azure.net` private DNS zone.
+
 ### Provisioning
 
 Apply Terraform
@@ -79,6 +144,28 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+For a brand-new cluster, this legacy monolithic root requires two stages
+because its Kubernetes and Helm providers cannot connect until AKS exists. The
+first stage must be reviewed as a saved plan and should contain only Azure
+infrastructure and its dependencies:
+
+```
+terraform plan \
+  -target=azurerm_kubernetes_cluster.main \
+  -target=azurerm_kubernetes_cluster_node_pool.reducto \
+  -target=azurerm_private_endpoint.redis \
+  -out=bootstrap.tfplan
+terraform apply bootstrap.tfplan
+
+terraform plan -out=platform.tfplan
+terraform apply platform.tfplan
+```
+
+Do not reuse either saved plan after configuration or remote state changes.
+The consolidated `onprem-infra` repository avoids targeted bootstrapping by
+using separate Azure infrastructure and platform roots and is preferred for
+new installations.
 
 ### DNS
 

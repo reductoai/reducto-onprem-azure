@@ -68,8 +68,10 @@ variable "postgres_pgbouncer_enabled" {
 
 # AKS Configuration
 variable "kubernetes_version" {
-  type    = string
-  default = "1.30"
+  description = "AKS Kubernetes version. Null lets Azure select the current supported default; pin this in production."
+  type        = string
+  default     = null
+  nullable    = true
 }
 
 variable "default_node_pool_vm_size" {
@@ -99,21 +101,42 @@ variable "cluster_endpoint_public_access_cidrs" {
 # Reducto
 variable "reducto_helm_repo_username" {
   description = "Username for Helm Registry for Reducto Helm Chart"
+  type        = string
 }
 
 variable "reducto_helm_repo_password" {
   sensitive   = true
   description = "Password for Helm Registry for Reducto Helm Chart"
+  type        = string
 }
 
 variable "reducto_helm_chart_version" {
   description = "Reducto Helm Chart version"
-  default     = "1.10.0"
+  type        = string
+  default     = "1.12.6"
 }
 
 variable "reducto_helm_chart" {
   description = "Path to Helm Chart on OCI registry"
+  type        = string
   default     = "oci://registry.reducto.ai/reducto-api/reducto"
+}
+
+variable "reducto_extra_values_files" {
+  description = "Paths to additional Helm values files layered last. Use this for deployment-specific queue worker settings."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for values_path in var.reducto_extra_values_files : can(file(values_path))])
+    error_message = "Every reducto_extra_values_files entry must be a readable file path."
+  }
+}
+
+variable "helm_release_timeout" {
+  description = "Timeout in seconds for the Reducto Helm release."
+  type        = number
+  default     = 900
 }
 
 # Private DNS Zone for Reducto on prem
@@ -127,4 +150,23 @@ variable "reducto_api_subdomain" {
   description = "The subdomain for the Reducto API"
   type        = string
   default     = "reducto"
+}
+
+# Azure Managed Redis
+variable "enable_managed_redis" {
+  description = "Provision Azure Managed Redis and pass its TLS connection URL to Reducto. Opt in when using the New Reducto Architecture or another Redis-backed feature."
+  type        = bool
+  default     = false
+}
+
+variable "managed_redis_sku_name" {
+  description = "Azure Managed Redis SKU. Balanced_B0 is suitable for small installations and disposable tests; size this for production throughput."
+  type        = string
+  default     = "Balanced_B0"
+}
+
+variable "managed_redis_high_availability_enabled" {
+  description = "Enable Azure Managed Redis high availability. Disable only for disposable environments."
+  type        = bool
+  default     = true
 }

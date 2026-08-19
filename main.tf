@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+      version = ">= 4.81, < 5.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -39,25 +39,26 @@ data "azurerm_kubernetes_cluster" "default" {
 }
 
 provider "kubernetes" {
-  host                   = data.azurerm_kubernetes_cluster.default.kube_config.0.host
-  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.client_certificate)
-  client_key             = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.cluster_ca_certificate)
+  host                   = data.azurerm_kubernetes_cluster.default.kube_config[0].host
+  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_certificate)
+  client_key             = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_key)
+  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].cluster_ca_certificate)
 }
 
 provider "kubectl" {
-  host                   = data.azurerm_kubernetes_cluster.default.kube_config.0.host
-  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.cluster_ca_certificate)
-  token                  = data.azurerm_kubernetes_cluster.default.kube_config.0.password
+  host                   = data.azurerm_kubernetes_cluster.default.kube_config[0].host
+  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].cluster_ca_certificate)
+  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_certificate)
+  client_key             = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_key)
   load_config_file       = false
 }
 
 
 provider "helm" {
   kubernetes {
-    host                   = data.azurerm_kubernetes_cluster.default.kube_config.0.host
-    client_certificate     = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.client_certificate)
-    client_key             = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config.0.cluster_ca_certificate)
+    host                   = data.azurerm_kubernetes_cluster.default.kube_config[0].host
+    client_certificate     = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_certificate)
+    client_key             = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].client_key)
+    cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.default.kube_config[0].cluster_ca_certificate)
   }
 }

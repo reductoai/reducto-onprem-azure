@@ -32,3 +32,14 @@ output "storage_primary_connection_string" {
 output "reducto_private_link_service_alias" {
   value = azurerm_private_link_service.reducto.alias
 }
+
+# Azure Managed Redis
+output "managed_redis_hostname" {
+  description = "Azure Managed Redis endpoint hostname."
+  value       = var.enable_managed_redis ? azurerm_managed_redis.reducto[0].hostname : null
+}
+
+output "managed_redis_port" {
+  description = "TLS port for Azure Managed Redis."
+  value       = var.enable_managed_redis ? azurerm_managed_redis.reducto[0].default_database[0].port : null
+}

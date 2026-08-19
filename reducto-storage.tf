@@ -7,6 +7,10 @@ resource "azurerm_storage_account" "main" {
   account_replication_type = "LRS"
   min_tls_version          = "TLS1_2"
 
+  public_network_access_enabled   = true
+  shared_access_key_enabled       = true
+  allow_nested_items_to_be_public = false
+
   lifecycle {
     prevent_destroy = true
   }
@@ -22,4 +26,3 @@ resource "azurerm_storage_container" "reducto" {
     prevent_destroy = true
   }
 }
-
